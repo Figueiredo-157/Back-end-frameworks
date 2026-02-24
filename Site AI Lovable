@@ -1,1 +1,79 @@
-
+importar { useState } de "react";
+importar { useNavigate } de "react-router-dom";
+importar { supabase } de "@/integrations/supabase/client";
+importar { Button } de "@/components/ui/button";
+importar { Input } de "@/components/ui/input";
+importar { Card, CardContent, CardDescription, CardHeader, CardTitle } de "@/components/ui/card";
+importar { useToast } de "@/hooks/use-toast";
+const Auth = () => {
+ const [isLogin, setIsLogin] = useState(true);
+ const [email, setEmail] = useState("");
+ const [senha, setPassword] = useState("");
+ const [carregando, setLoading] = useState(false);
+ const navigate = useNavigate();
+ const { toast } = useToast();
+ const handleSubmit = assíncrono (e: React.FormEvent) => {
+ e.preventDefault();
+ setLoading(true);
+ if (isLogin) {
+ const { erro } = await supabase.Auth.logInWithPassword({ email, senha });
+ if (erro) {
+ toast({ título: "Erro ao entrar", descrição: erro.mensagem, variante: "destrutivo"  });
+      } senão {
+        navegar("/");
+      }
+    } senão {
+ const { erro } = await supabase.Auth.logUp({ email, senha });
+ if (erro) {
+ toast({ título: "Erro ao cadastrar", descrição: erro.mensagem, variante: "destrutivo"  });
+      } senão {
+        toast({ title: "Cadastro realizado!", description: "Verifique seu e-mail para confirmar a conta." });
+      }
+    }
+ setLoading(false);
+  };
+  retorno (
+ <div className="flex min-h-screen-center, items-center justify-center bg-background p-4">
+ <Card className="w-full max-w-md">
+ <CardHeader className="text-center">
+ <CardTitle className="text-2xl">{isLogin  ? "Entrar" : "Criar Conta"}</CardTitle>
+          <Descrição da Carta>
+            {isLogin ? "Faça login para gerenciar suas tarefas" : "Crie uma conta para começar"}
+          </Descrição da Carta>
+        </CardHeader>
+        <CardContent>
+ <form onSubmit={handleSubmit} className="space-y-4">
+            <Entrada
+ type="email"
+ placeholder="E-mail"
+ value={email}
+ onChange={(e) => setEmail(e.Alvo.valor)}
+              Obrigatório
+            />
+            <Entrada
+ Type="senha"
+ marcador de lugar="Senha"
+ value={password}
+ onChange={(e) => setPassword(e.Alvo.valor)}
+              Obrigatório
+ minLength={6}
+            />
+ <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Carregando..." : isLogin ? "Entrar" : "Cadastrar"}
+            </Botão>
+          </Forma>
+ <p className="mt-4 text-center text-sm text-muted-foreground">
+            {isLogin ? "Não tem conta?" : "Já tem conta?"}{" "}
+            <botão
+ onClick={() => setIsLogin(!isLogin)}
+ className="text-primary sublinhado passando o cursor:no-sublinhado"
+            >
+              {isLogin ? "Cadastre-se" : "Faça login"}
+            </botão>
+          </p>
+        </CardContent>
+      </Cartão>
+    </divisão>
+  );
+};
+exportação de autenticação padrão;
