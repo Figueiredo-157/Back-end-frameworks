@@ -1,0 +1,7 @@
+inicializar: npm init -y
+
+instalar: npm install express sqlite3 cors
+
+executar: node server.js
+
+abrir no navegador: http://localhost:3000
