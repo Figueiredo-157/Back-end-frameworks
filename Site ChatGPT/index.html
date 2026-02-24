@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Site Simples</title>
+</head>
+<body>
+
+  <h1>Cadastro de Usuários</h1>
+
+  <input type="text" id="nameInput" placeholder="Digite um nome">
+  <button onclick="addUser()">Cadastrar</button>
+
+  <h2>Lista de Usuários</h2>
+  <ul id="userList"></ul>
+
+  <script>
+    async function loadUsers() {
+      const response = await fetch("/users");
+      const users = await response.json();
+
+      const list = document.getElementById("userList");
+      list.innerHTML = "";
+
+      users.forEach(user => {
+        const li = document.createElement("li");
+        li.textContent = user.name;
+        list.appendChild(li);
+      });
+    }
+
+    async function addUser() {
+      const name = document.getElementById("nameInput").value;
+
+      await fetch("/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ name })
+      });
+
+      document.getElementById("nameInput").value = "";
+      loadUsers();
+    }
+
+    loadUsers();
+  </script>
+
+</body>
+</html>
