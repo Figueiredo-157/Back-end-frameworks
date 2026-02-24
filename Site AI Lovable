@@ -1,3 +1,5 @@
+// Auth.tsx
+
 importar { useState } de "react";
 importar { useNavigate } de "react-router-dom";
 importar { supabase } de "@/integrations/supabase/client";
@@ -77,3 +79,186 @@ const Auth = () => {
   );
 };
 exportação de autenticação padrão;
+
+// src/pages/index.tsx
+
+importar { useEffect, useState } de "react";
+importar { useNavigate } de "react-router-dom";
+importar { supabase } de "@/integrations/supabase/client";
+importar { Button } de "@/components/ui/button";
+importar { Input } de "@/components/ui/input";
+importar { Checkbox } de "@/components/ui/checkbox";
+importar { useToast } de "@/hooks/use-toast";
+import { Trash2, LogOut, Plus } de "lucide-react";
+interface Task {
+ id: string;
+ título: string;
+ Concluído: Booleano;
+ created_at: corda;
+}
+const Index = () => {
+ retorno (
+ <div className="flex min-h-screen-center, items-center justify-center bg-background">
+ − <classNomeDiv="text-center">
+ − <h1 className="mb-4 text-4xl font-bold">Bem-vindo ao seu aplicativo em branco</h1>
+ <p className="text-xl text-muted-foreground">Comece a construir seu incrível projeto aqui!</p>
+ const [tarefas, setTarefas] = useState<Task[]>([]);
+  const [newTask, setNewTask] = useState("");
+ const [userId, setUserId] = useState<string | nulo>(nulo);
+ const [carregando, setLoading] = useState(true);
+  const navigate = useNavigate();
+ const { toast } = useToast();
+  useEffect(() => {
+ const checkAuth = assíncrono () => {
+ const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+ navegar("/auth");
+        retorno;
+      }
+      setUserId(session.user.id);
+      fetchTasks();
+    };
+    checkAuth();
+ const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+ se (!session) navegar("/auth");
+    });
+    return () => subscription.unsubscribe();
+ }, [navegar]);
+  const fetchTasks = async () => {
+ const { data, error } = await supabase
+ .de("tarefas")
+      .select("*")
+ .order("created_at", { ascendente: false });
+ if (erro) {
+ toast({ título: "Erro ao carregar tarefas", descrição: erro.mensagem, variante: "destrutivo"  });
+    } senão {
+ setTasks(data || []);
+    }
+ setLoading (false);
+  };
+ const addTask = assíncrono (e: React.FormEvent) => {
+ e.preventDefault();
+ se (!novaTarefa.trim() || !userId) retornar;
+ const { error } = await supabase
+ .de("tarefas")
+ .insert({ título: newTask.trim(), user_id: userId });
+ if (erro) {
+ toast({ título: "Erro ao adicionar", descrição: erro.mensagem, variante: "destrutivo"  });
+    } senão {
+      setNewTask("");
+      fetchTasks();
+    }
+  };
+ const toggleTask = assíncrono (id: string, completado: booleano) => {
+ const { error } = await supabase
+ .de("tarefas")
+ .update({ concluído: !concluído })
+      .eq("id", id);
+ if (erro) {
+ toast({ título: "Erro ao atualizar", descrição: erro.mensagem, variante: "destrutivo"  });
+    } senão {
+      fetchTasks();
+    }
+  };
+ const deleteTask = assíncrono (id: string) => {
+ const { error } = await supabase
+ .de("tarefas")
+      .delete()
+      .eq("id", id);
+ if (erro) {
+ toast({ título: "Erro ao deletar", descrição: erro.mensagem, variante: "destrutivo"  });
+    } senão {
+      fetchTasks();
+    }
+  };
+  const handleLogout = async () => {
+ Aguarde o supabase.Auth.signOut();
+  };
+ se (carregando) {
+    retorno (
+ <div className="flex min-h-screen items-center justify-center bg-background">
+ <p className="text-muted-foreground">Carregando...</p>
+      </divisão>
+    );
+  }
+  retorno (
+ <div className="min-h-screen bg-background">
+ <cabeçalho className="border-b border-border">
+ <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-4">
+ <h1 className="text-xl font-bold text-foreground">Minhas Tarefas</h1>
+ <Button variant="ghost" size="sm" onClick={handleLogout}>
+ <LogOut className="mr-2 h-4 w-4" /> Sair
+          </Botão>
+        </divisão>
+      </cabeçalho>
+ <classNomePrincipal="mx-auto max-w-2xl px-4 py-8">
+ <form onSubmit={addTask} className="mb-8 flex gap-2">
+          <Entrada
+ marcador de lugar="Nova tarefa..."
+ value={newTask}
+ onChange={(e) => setNewTask(e.Alvo.valor)}
+ className="flex-1"
+          />
+ <Tipo de botão="submit">
+ <PlusClassName="mr-2 h-4 w-4" /> Adicionar
+          </Botão>
+        </Forma>
+ {tarefas.comprimento === 0 ? (
+          <p className="text-center text-muted-foreground">Nenhuma tarefa ainda. Adicione uma acima!</p>
+        ) : (
+ <ul className="space-y-2">
+ {tarefas.map((tarefa) => (
+              <li
+ chave={tarefa.id}
+ className="itens-centro de flexão gap-3 borda-borda arredondada-borda-borda bg-cartão p-3"
+              >
+                <Caixa de seleção
+ verificado={tarefa.concluído}
+ onCheckedChange={() => toggleTask(task.id, tarefa.concluído)}
+                />
+                <Vão
+ className={'flex-1 text-card-foreground ${task.concluído? "opacidade passando por linha-50" : ""}'}
+                >
+ {tarefa.título}
+                </Vão>
+                <Botão
+ variante="fantasma"
+ tamanho="ícone"
+ onClick={() => deleteTask(task.id)}
+ className="hover de texto destrutivo:texto destrutivo"
+                >
+ <Trash2 className="h-4 w-4" />
+                </Botão>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Principal>
+    </divisão>
+  );
+
+// App.tsx
+
+import { BrowserRouter, Routes, Route } de "react-router-dom";
+importar o Índice de "./páginas/Índice";
+importar Auth de "./pages/Auth";
+importar NotFound de "./pages/NotFound";
+const queryClient = new QueryClient();
+        <Rotas>
+ <Caminho de rota="/" element={<Index />} />
+ <Caminho de rota="/auth" element={<Auth />} />
+          {/* ADICIONAR TODAS AS ROTAS PERSONALIZADAS ACIMA DA ROTA "*" QUE É GENÉRICA */}
+ <Caminho de rota="*" element={<NotFound />} />
+
+// App.tsx
+
+import { BrowserRouter, Routes, Route } de "react-router-dom";
+importar o Índice de "./páginas/Índice";
+importar Auth de "./pages/Auth";
+importar NotFound de "./pages/NotFound";
+const queryClient = new QueryClient();
+        <Rotas>
+ <Caminho de rota="/" element={<Index />} />
+ <Caminho de rota="/auth" element={<Auth />} />
+          {/* ADICIONAR TODAS AS ROTAS PERSONALIZADAS ACIMA DA ROTA "*" QUE É GENÉRICA */}
+ <Caminho de rota="*" element={<NotFound />} />
